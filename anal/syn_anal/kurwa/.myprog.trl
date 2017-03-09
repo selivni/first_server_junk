@@ -1,0 +1,179 @@
+programma @huy;
+{
+	tsel @bot_did_not_win_yet;
+	tsel @markets[4096];
+	tsel @market_pointer;
+	tsel @sum_buy,@sum_sell;
+	tsel @players[131072];
+	tsel @a,@b,@c,@d;
+	tsel @array[12];
+	tsel @my_info[6];
+	tsel @old_market[4];
+	netsel @recommended[2];
+	tsel @i;
+	tsel @plr_count;
+	tsel @max_buy,@min_sell;
+	tsel @deficite_buy;
+	tsel @deficite_sell;
+	tsel @to_buy,@to_sell;
+	netsel @midexpr;
+	stroqua @s;
+	stroqua @str;
+	stroqua @s_sell,@s_buy;
+	@s_sell = "SELL:";
+	@s_buy = "BUY:";
+	@deficite_buy = 0;
+	@deficite_sell = 0;
+	@market_pointer = 0;
+	@recommended[0] = 1.0;
+	@recommended[1] = 1.0;
+	@bot_did_not_win_yet = 1;
+	@a = 2;
+	@b = 5500;
+	@c = 2;
+	@d = 500;
+	connect "0" "4567";
+	getplrcnt;
+	initplrs;
+	plr_count @plr_count;
+	poka (@bot_did_not_win_yet == 1) delat
+	{
+		getmarket;
+		mkt_info @markets[@market_pointer];
+		print @markets[@market_pointer];
+		print @markets[@market_pointer+1];
+		print @markets[@market_pointer+2];
+		print @markets[@market_pointer+3];
+		@market_pointer = @market_pointer+4;
+		yeslee (@deficite_buy == 1) to
+		{
+			@max_buy = 0;
+			@i = 1;
+			poka ((@i < @plr_count) ||(@i == @plr_count)) delat
+			{
+				getauc @array @i;
+				yeslee (@array[5] == 1) to
+				{
+					yeslee (@max_buy < @array[4]) to
+					{
+						@max_buy = @array[4];
+					}
+				}
+				@i = @i + 1;
+			}
+			yeslee (!(@max_buy == 0)) to
+			{
+				float @max_buy @midexpr;
+				@str = "MARKETS FOR RECOM";
+				print @str;
+				print @markets[@market_pointer-5];
+				@midexpr = @midexpr/@markets[@market_pointer - 5];
+				@recommended[1] = @midexpr;
+			}
+		}
+		yeslee (@deficite_sell == 1) to
+		{
+			@min_sell = 10000;
+			@i = 1;
+			poka ((@i < @plr_count) ||(@i == @plr_count)) delat
+			{
+				getauc @array @i;
+				yeslee (@array[0] == 1) to
+				{
+					yeslee (@min_sell > @array[2]) to
+					{
+						@min_sell = @array[2];
+					}
+				}
+				@i = @i + 1;
+			}
+			yeslee (!(@min_sell == 10000)) to
+			{
+				float @min_sell @midexpr;
+				@str = "MARKETS FOR RECOM";
+				print @str;
+				print @markets[@market_pointer-7];
+				@midexpr = @midexpr/@markets[@market_pointer - 7];
+				@recommended[0] = @midexpr;
+			}
+		}
+		@i = 1;
+		my_info @my_info;
+		@sum_buy = 0;
+		@sum_sell = 0;
+		poka ((@i < @plr_count)||(@i == @plr_count)) delat
+		{
+			plr_info @array @i;
+			yeslee (@array[5] == 0) to
+			{
+				@sum_buy = @sum_buy + @array[4];
+				@sum_sell = @sum_sell + @array[2];
+			}
+			@i = @i + 1;
+		}
+		@sum_buy = @sum_buy + @my_info[4];
+		@sum_sell = @sum_sell + @my_info[2];
+		yeslee (@sum_buy > @markets[@market_pointer - 2]) to
+		{
+			@str = "recommended:";
+			print @str;
+			print @recommended[1];
+			@deficite_buy = 1;
+			@str = "markets[market_pointer-1]";
+			print @str;
+			print @markets[@market_pointer-1];
+			@midexpr = @recommended[1] * @markets[@market_pointer-1];
+			@str = "midexpr";
+			print @str;
+			print @midexpr;
+			int @midexpr @to_buy;
+			@str = "to_buy";
+			print @str;
+			print @to_buy;
+			@to_buy = @to_buy + 1;
+		}
+		yeslee (!(@sum_buy > @markets[@market_pointer-2])) to
+		{
+			@deficite_buy = 0;
+			@to_buy = @markets[@market_pointer-1];
+		}
+		print @s_buy;
+		print @my_info[4];
+		print @to_buy;
+		buy @my_info[4] @to_buy;
+		yeslee (@sum_sell > @markets[@market_pointer - 4]) to
+		{
+			@str = "recommended:";
+			print @str;
+			print @recommended[0];
+			@deficite_sell = 1;
+			@str = "markets[market_pointer-3]";
+			print @str;
+			print @markets[@market_pointer-3];
+			@midexpr = @recommended[0] * @markets[@market_pointer-3];
+			@str = "midexpr";
+			print @str;
+			print @midexpr;
+			int @midexpr @to_sell;
+			@str = "to_buy";
+			print @str;
+			print @to_buy;
+			@to_sell = @to_sell - 1;
+		}
+		yeslee (!(@sum_sell > @markets[@market_pointer - 4])) to
+		{
+			@deficite_sell = 0;
+			@to_sell = @markets[@market_pointer-3];
+		}
+		print @s_sell;
+		print @my_info[2];
+		print @to_sell;
+		sell @my_info[2] @to_sell;
+		prod @my_info[4];
+		turn;
+		analauc;
+		analdead;
+		getinfo;
+	}
+	koniets;
+}

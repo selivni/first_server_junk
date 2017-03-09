@@ -1,0 +1,29 @@
+programma @hu;
+{
+	stroqua @s;
+	tsel @i;
+	netsel @float;
+	@i = 0;
+	@float = 9.999;
+	connect;
+	getplrcnt;
+	@s = "fasdfasdfasdfasdfa";
+	initplrs;
+	poka (@i == 0 || (@i==0 && !(@float=0)) ) delat
+	{
+		getmarket;
+		buysellend;
+		analdead;
+		getinfo;
+		@i = @i-@i;
+		yeslee (@i == 0) to
+		{
+
+		}
+		@float = @float+@i*200000;
+	}
+	delat
+	{
+	} poka (1);
+	koniets;
+}
